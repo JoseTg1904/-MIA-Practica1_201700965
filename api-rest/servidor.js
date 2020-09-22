@@ -1,6 +1,12 @@
 const  express = require('express');
 const morgan = require('morgan');
-//const bodyParser = require('body-parser');
+const bodyParser = require('body-parser');
+const path = require('path');
+
+//variable que almacena la ruta donde se esta ejecutando el servidor
+//para obtener la ubicacion del csv para realizar la carga masiva
+global.pathActual = path.resolve(__dirname);
+pathActual = path.join(pathActual, "/Base/DataCenterData.csv");
 
 const servidor = express();
 

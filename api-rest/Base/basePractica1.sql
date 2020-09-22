@@ -23,3 +23,14 @@ CREATE TABLE IF NOT EXISTS temporal (
     cantidad VARCHAR(200),
     precio_unitario VARCHAR(200)
 );
+
+insert into temporal (nombre_compania, contacto_compania) values ("hola", "adios");
+select * from temporal;
+
+#script para llenar la tabla temporal, con los datos del csv
+LOAD DATA 
+LOCAL INFILE 'home/jose/Escritorio/[MIA]Practica1_201700965/Base/DataCenterData.csv'
+INTO TABLE temporal
+COLUMNS TERMINATED BY ';'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES;
