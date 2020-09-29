@@ -15,15 +15,5 @@ conexion.connect( (error) => {
     }
 });
 
-let acciones = {};
-
-acciones.eliminarTemporal = (callback) =>{
-    if (conexion){
-        conexion.query('TRUNCATE TABLE temporal')
-        callback({msg:'tabla temporal limpiada'})
-    }
-};
-
 module.exports = conexion;
-
-//conexion.end();
+ 
