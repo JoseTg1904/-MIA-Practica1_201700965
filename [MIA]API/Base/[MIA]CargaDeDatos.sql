@@ -49,7 +49,7 @@ SELECT DISTINCT nombre, correo, telefono, fecha_registro, direccion, codigo_post
 (SELECT ID_TipoUsuario FROM Tipo_usuario where tipoUsuario = tipo) 
 From Temporal 
 GROUP BY nombre, correo, telefono, fecha_registro, direccion, codigo_postal, ciudad, tipo;
--
+
 #llenado de las transacciones
 INSERT INTO Transaccion (ID_Usuario, ID_Compania) 
 SELECT DISTINCT (SELECT ID_Usuario FROM Usuario where nombreUsuario = Temporal.nombre), 
@@ -72,5 +72,4 @@ SELECT DISTINCT Temporal.cantidad,
 and 
 ID_Compania = (SELECT ID_Compania from Compania where Compania.nombre = Temporal.nombre_compania)), 
 (SELECT ID_Producto FROM Producto where nombreProducto = Temporal.producto) 
-From Temporal 
-GROUP BY cantidad, nombre, nombre_compania, producto;
+From Temporal;

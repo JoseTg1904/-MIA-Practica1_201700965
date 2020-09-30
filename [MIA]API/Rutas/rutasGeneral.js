@@ -10,12 +10,13 @@ router.get('/consulta1', (req, res) => {
             conexionBase.query("select Usuario.nombreUsuario as Nombre_usuario, \
             Usuario.telefonoUsuario as Telefono_usuario, Transaccion.ID_Transaccion as Numero_transaccion, \
             Compania.nombre as Nombre_compañia, \
-            sum(Detalle_transaccion.cantidad * (select precioUnitario from Producto where Producto.ID_Producto = Detalle_transaccion.ID_Producto) ) \
+            sum(Detalle_transaccion.cantidad * Producto.precioUnitario ) \
             as Total_orden \
             from Usuario \
             inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
             inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
             inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
+            inner join Producto on Producto.ID_Producto = Detalle_transaccion.ID_Producto \
             where Usuario.ID_TipoUsuario = 1 \
             group by nombreUsuario, Transaccion.ID_Compania, telefonoUsuario, Transaccion.ID_Transaccion \
             order by Total_orden desc \
@@ -324,13 +325,13 @@ router.get('/cargarModelo', (req, res) => {
 
         //llenado del detalle de las transacciones
         conexionBase.query("INSERT INTO Detalle_transaccion (cantidad, ID_Transaccion, ID_Producto) \
-        SELECT DISTINCT Temporal.cantidad, \
-        (SELECT ID_Transaccion FROM Transaccion where ID_Usuario = (SELECT ID_Usuario from Usuario where nombreUsuario = Temporal.nombre) \
+        SELECT Temporal.cantidad, \
+        (SELECT ID_Transaccion FROM Transaccion where ID_Usuario = \
+        (SELECT ID_Usuario from Usuario where nombreUsuario = Temporal.nombre) \
         and \
         ID_Compania = (SELECT ID_Compania from Compania where Compania.nombre = Temporal.nombre_compania)), \
         (SELECT ID_Producto FROM Producto where nombreProducto = Temporal.producto) \
-        From Temporal \
-        GROUP BY cantidad, nombre, nombre_compania, producto;")
+        From Temporal;")
 
         res.json({msg:'modelo cargado c:'})
     }
