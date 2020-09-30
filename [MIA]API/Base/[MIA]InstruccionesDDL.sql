@@ -107,22 +107,3 @@ create table if not exists Detalle_transaccion(
     foreign key(ID_Transaccion) references Transaccion(ID_Transaccion),
     foreign key(ID_Producto) references Producto(ID_Producto)
 );
-
-
-select count(*) as total_pedidos
-from Usuario 
-inner join
-Ciudad on Usuario.ID_Ciudad = Ciudad.ID_Ciudad
-inner join
-Region on Ciudad.ID_Region = Region.ID_Region
-inner join 
-Tipo_usuario on Usuario.ID_TipoUsuario = Tipo_usuario.ID_TipoUsuario 
-inner join 
-Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario 
-inner join 
-Compania on Transaccion.ID_Compania = Compania.ID_Compania
-where Usuario.ID_TipoUsuario = 1
-group by Usuario.direccion, Usuario.codigoPostal, Ciudad.nombreCiudad, Region.nombreRegion
-order by total_pedidos;
-
-

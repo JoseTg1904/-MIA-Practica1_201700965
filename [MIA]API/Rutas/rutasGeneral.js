@@ -1,6 +1,5 @@
 const express = require('express');
 const { query } = require('./conexionBase');
-//const conexion = require('./conexionBase');
 const router = express.Router();
 
 const conexionBase = require('./conexionBase');
@@ -8,20 +7,19 @@ const conexionBase = require('./conexionBase');
 //rutas de reporte
 router.get('/consulta1', (req, res) => {
     if (conexionBase){
-        conexionBase.query("select Usuario.nombreUsuario as Nombre_usuario, \
-        Usuario.telefonoUsuario as Telefono_usuario, Transaccion.ID_Transaccion as Numero_transaccion, \
-        Compania.nombre as Nombre_compañia, \
-        sum(Detalle_transaccion.cantidad * (select precioUnitario from Producto where Producto.ID_Producto = Detalle_transaccion.ID_Producto) ) \
-        as Total_orden \
-        from Usuario \
-        inner join Tipo_usuario on Usuario.ID_TipoUsuario = Tipo_usuario.ID_TipoUsuario \
-        inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
-        inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
-        inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
-        where Usuario.ID_TipoUsuario = 1 \
-        group by nombreUsuario, Transaccion.ID_Compania, telefonoUsuario, Transaccion.ID_Transaccion \
-        order by Total_orden desc \
-        limit 1;", (error, resultado) => {
+            conexionBase.query("select Usuario.nombreUsuario as Nombre_usuario, \
+            Usuario.telefonoUsuario as Telefono_usuario, Transaccion.ID_Transaccion as Numero_transaccion, \
+            Compania.nombre as Nombre_compañia, \
+            sum(Detalle_transaccion.cantidad * (select precioUnitario from Producto where Producto.ID_Producto = Detalle_transaccion.ID_Producto) ) \
+            as Total_orden \
+            from Usuario \
+            inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
+            inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
+            inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
+            where Usuario.ID_TipoUsuario = 1 \
+            group by nombreUsuario, Transaccion.ID_Compania, telefonoUsuario, Transaccion.ID_Transaccion \
+            order by Total_orden desc \
+            limit 1;", (error, resultado) => {
             if (error) throw error;
             res.json(resultado)
         })
@@ -34,12 +32,11 @@ router.get('/consulta2', (req, res) => {
         Usuario.nombreUsuario as Nombre_usuario, \
         sum(Detalle_transaccion.cantidad) as Total_productos \
         from Usuario \
-        inner join Tipo_usuario on Usuario.ID_TipoUsuario = Tipo_usuario.ID_TipoUsuario \
         inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
         inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
         inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
         where Usuario.ID_TipoUsuario = 2 \
-        group by Usuario.ID_Usuario, nombreUsuario, Transaccion.ID_Transaccion \
+        group by Usuario.ID_Usuario, nombreUsuario \
         order by Total_productos desc \
         limit 1;", (error, resultado) => {
             if (error) throw error;
@@ -55,7 +52,6 @@ router.get('/consulta3', (req, res) => {
             from Usuario \
             inner join Ciudad on Usuario.ID_Ciudad = Ciudad.ID_Ciudad \
             inner join Region on Ciudad.ID_Region = Region.ID_Region \
-            inner join Tipo_usuario on Usuario.ID_TipoUsuario = Tipo_usuario.ID_TipoUsuario \
             inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
             inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
             where Usuario.ID_TipoUsuario = 1 \
@@ -67,7 +63,6 @@ router.get('/consulta3', (req, res) => {
             from Usuario \
             inner join Ciudad on Usuario.ID_Ciudad = Ciudad.ID_Ciudad \
             inner join Region on Ciudad.ID_Region = Region.ID_Region \
-            inner join Tipo_usuario on Usuario.ID_TipoUsuario = Tipo_usuario.ID_TipoUsuario \
             inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
             inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
             where Usuario.ID_TipoUsuario = 1 \
@@ -80,40 +75,54 @@ router.get('/consulta3', (req, res) => {
 });
 
 router.get('/consulta4', (req, res) => {
-    res.json({msg:'hola soy la consula 4 c:'});
+    if (conexionBase){
+        conexionBase.query("select Usuario.nombreUsuario as Nombre_usuario, \
+        Transaccion.ID_Transaccion as Numero_transaccion, Compania.nombre as Nombre_compañia, \
+        count(Categoria_producto.categoriaProducto) as Contador_quesos \
+        from Usuario \
+        inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
+        inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
+        inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
+        inner join Producto on Producto.ID_Producto = Detalle_transaccion.ID_Producto \
+        inner join Categoria_producto on Categoria_producto.ID_CategoriaProducto = Producto.ID_CategoriaProducto \
+        where Usuario.ID_TipoUsuario = 2 and Categoria_producto.categoriaProducto = \"Cheese\" \
+        group by nombreUsuario, Usuario.ID_Usuario, Transaccion.ID_Compania, Transaccion.ID_Transaccion, \
+        Categoria_producto.categoriaProducto \
+        order by Contador_quesos desc \
+        limit 5;", (error, resultado) => {
+            if (error) throw error;
+            res.json(resultado)
+        })
+    }
 });
 
 router.get('/consulta5', (req, res) => {
     if (conexionBase){
         conexionBase.query("(select Usuario.nombreUsuario as Nombre_usuario, \
-            Usuario.fechaRegistro as registro_usuario, Transaccion.ID_Transaccion as Numero_transaccion, \
-            Compania.nombre as Nombre_compañia, \
+            Usuario.fechaRegistro as registro_usuario, \
             sum(Detalle_transaccion.cantidad * \
             (select precioUnitario from Producto where Producto.ID_Producto = Detalle_transaccion.ID_Producto) ) \
             as Total_orden \
             from Usuario \
-            inner join Tipo_usuario on Usuario.ID_TipoUsuario = Tipo_usuario.ID_TipoUsuario \
             inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
             inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
             inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
             where Usuario.ID_TipoUsuario = 2 \
-            group by nombreUsuario, Transaccion.ID_Compania, fechaRegistro, Transaccion.ID_Transaccion \
+            group by nombreUsuario, fechaRegistro \
             order by Total_orden desc \
             limit 3) \
             union all \
             (select Usuario.nombreUsuario as Nombre_usuario, \
-            Usuario.fechaRegistro as registro_usuario, Transaccion.ID_Transaccion as Numero_transaccion, \
-            Compania.nombre as Nombre_compañia, \
+            Usuario.fechaRegistro as registro_usuario, \
             sum(Detalle_transaccion.cantidad * \
             (select precioUnitario from Producto where Producto.ID_Producto = Detalle_transaccion.ID_Producto) ) \
             as Total_orden \
             from Usuario \
-            inner join Tipo_usuario on Usuario.ID_TipoUsuario = Tipo_usuario.ID_TipoUsuario \
             inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
             inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
             inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
             where Usuario.ID_TipoUsuario = 2 \
-            group by nombreUsuario, Transaccion.ID_Compania, fechaRegistro, Transaccion.ID_Transaccion \
+            group by nombreUsuario, fechaRegistro \
             order by Total_orden asc \
             limit 3);", (error, resultado) => {
             if (error) throw error;
@@ -123,23 +132,130 @@ router.get('/consulta5', (req, res) => {
 });
 
 router.get('/consulta6', (req, res) => {
-    res.json({msg:'hola soy la consula 6 c:'});
+    if (conexionBase){
+        conexionBase.query("(select Categoria_producto.categoriaProducto as Categoria_Producto, \
+            sum(Producto.precioUnitario * Detalle_transaccion.cantidad) as Contador_categoria \
+            from Usuario \
+            inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
+            inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
+            inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
+            inner join Producto on Producto.ID_Producto = Detalle_transaccion.ID_Producto \
+            inner join Categoria_producto on Categoria_producto.ID_CategoriaProducto = Producto.ID_CategoriaProducto \
+            where Usuario.ID_TipoUsuario = 1 \
+            group by Categoria_producto.categoriaProducto \
+            order by Contador_categoria desc \
+            limit 1) \
+            union all \
+            (select Categoria_producto.categoriaProducto as Categoria_Producto, \
+            sum(Producto.precioUnitario * Detalle_transaccion.cantidad) as Contador_categoria \
+            from Usuario \
+            inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
+            inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
+            inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
+            inner join Producto on Producto.ID_Producto = Detalle_transaccion.ID_Producto \
+            inner join Categoria_producto on Categoria_producto.ID_CategoriaProducto = Producto.ID_CategoriaProducto \
+            where Usuario.ID_TipoUsuario = 1 \
+            group by Categoria_producto.categoriaProducto \
+            order by Contador_categoria asc \
+            limit 1);", (error, resultado) => {
+            if (error) throw error;
+            res.json(resultado)
+        })
+    }
 });
 
 router.get('/consulta7', (req, res) => {
-    res.json({msg:'hola soy la consula 7 c:'});
+    if (conexionBase){
+        conexionBase.query("select Usuario.nombreUsuario as Nombre_usuario, \
+        sum(Detalle_transaccion.cantidad * Producto.precioUnitario) as total_vegetales \
+        from Usuario \
+        inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
+        inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
+        inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
+        inner join Producto on Producto.ID_Producto = Detalle_transaccion.ID_Producto \
+        inner join Categoria_producto on Categoria_producto.ID_CategoriaProducto = Producto.ID_CategoriaProducto  \
+        where Usuario.ID_TipoUsuario = 2 and Categoria_producto.categoriaProducto = \"Fresh Vegetables\" \
+        group by nombreUsuario \
+        order by total_vegetales desc \
+        limit 5;", (error, resultado) => {
+            if (error) throw error;
+            res.json(resultado)
+        })
+    }
 });
 
 router.get('/consulta8', (req, res) => {
-    res.json({msg:'hola soy la consula 8 c:'});
+    if (conexionBase){
+        conexionBase.query("(select Usuario.direccion as direccion, Region.nombreRegion as region, \
+            Ciudad.nombreCiudad as ciudad, Usuario.codigoPostal as codigo_postal, \
+            sum(Producto.precioUnitario * Detalle_transaccion.Cantidad) as total_compra \
+            from Usuario \
+            inner join Ciudad on Usuario.ID_Ciudad = Ciudad.ID_Ciudad \
+            inner join Region on Ciudad.ID_Region = Region.ID_Region \
+            inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
+            inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
+            inner join Producto on Producto.ID_Producto = Detalle_transaccion.ID_Producto \
+            where Usuario.ID_TipoUsuario = 2 \
+            group by Usuario.direccion, Usuario.codigoPostal, Ciudad.nombreCiudad, Region.nombreRegion \
+            order by total_compra desc limit 3) \
+            union all \
+            (select Usuario.direccion as direccion, Region.nombreRegion as region, \
+            Ciudad.nombreCiudad as ciudad, Usuario.codigoPostal as codigo_postal, \
+            sum(Producto.precioUnitario * Detalle_transaccion.Cantidad) as total_compra \
+            from Usuario \
+            inner join Ciudad on Usuario.ID_Ciudad = Ciudad.ID_Ciudad \
+            inner join Region on Ciudad.ID_Region = Region.ID_Region \
+            inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
+            inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
+            inner join Producto on Producto.ID_Producto = Detalle_transaccion.ID_Producto \
+            where Usuario.ID_TipoUsuario = 2 \
+            group by Usuario.direccion, Usuario.codigoPostal, Ciudad.nombreCiudad, Region.nombreRegion \
+            order by total_compra asc limit 3);", (error, resultado) => {
+            if (error) throw error;
+            res.json(resultado)
+        })
+    }
 });
 
 router.get('/consulta9', (req, res) => {
-    res.json({msg:'hola soy la consula 9 c:'});
+    if (conexionBase){
+        conexionBase.query("select Usuario.nombreUsuario as Nombre_usuario, \
+        Usuario.telefonoUsuario as Telefono_usuario, Transaccion.ID_Transaccion as Numero_transaccion, \
+        Compania.nombre as Nombre_compañia, \
+        sum(Detalle_transaccion.cantidad) \
+        as Total_orden \
+        from Usuario \
+        inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
+        inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
+        inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
+        where Usuario.ID_TipoUsuario = 1 \
+        group by nombreUsuario, Transaccion.ID_Compania, telefonoUsuario, Transaccion.ID_Transaccion \
+        order by Total_orden asc \
+        limit 1;", (error, resultado) => {
+        if (error) throw error;
+        res.json(resultado)
+    })
+}
 });
 
 router.get('/consulta10', (req, res) => {
-    res.json({msg:'hola soy la consula 10 c:'});
+    if (conexionBase){
+        conexionBase.query("select Usuario.nombreUsuario as Nombre_usuario, \
+        count(Categoria_producto.categoriaProducto) as Contador_Seafood \
+        from Usuario \
+        inner join Transaccion on Transaccion.ID_Usuario = Usuario.ID_Usuario \
+        inner join Compania on Transaccion.ID_Compania = Compania.ID_Compania \
+        inner join Detalle_transaccion on Detalle_transaccion.ID_Transaccion = Transaccion.ID_Transaccion \
+        inner join Producto on Producto.ID_Producto = Detalle_transaccion.ID_Producto \
+        inner join Categoria_producto on Categoria_producto.ID_CategoriaProducto = Producto.ID_CategoriaProducto \
+        where Usuario.ID_TipoUsuario = 2 and Categoria_producto.categoriaProducto = \"Seafood\" \
+        group by nombreUsuario, Usuario.ID_Usuario, Categoria_producto.categoriaProducto \
+        order by Contador_Seafood desc \
+        limit 10;", (error, resultado) => {
+            if (error) throw error;
+            res.json(resultado)
+        })
+    }
 });
 
 //rutas de carga
