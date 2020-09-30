@@ -66,7 +66,7 @@ GROUP BY producto, precio_unitario, categoria_producto;
 
 #llenado del detalle de las transacciones
 INSERT INTO Detalle_transaccion (cantidad, ID_Transaccion, ID_Producto) 
-SELECT DISTINCT Temporal.cantidad, 
+SELECT Temporal.cantidad, 
 (SELECT ID_Transaccion FROM Transaccion where ID_Usuario = 
 (SELECT ID_Usuario from Usuario where nombreUsuario = Temporal.nombre)
 and 
